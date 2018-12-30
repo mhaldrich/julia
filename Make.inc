@@ -336,6 +336,8 @@ OPENBLAS_DYNAMIC_ARCH := 1
 override CROSS_COMPILE:=$(XC_HOST)-
 ifneq (,$(findstring mingw,$(XC_HOST)))
 override OS := WINNT
+else ifneq (,$(findstring emscripten,$(XC_HOST)))
+override OS := emscripten
 else
 ifeq (,$(OS))
 $(error "unknown XC_HOST variable set, please set OS")
