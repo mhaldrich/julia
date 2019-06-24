@@ -982,7 +982,7 @@ end
 function show_call(io::IO, head, func, func_args, indent)
     op, cl = expr_calls[head]
     if (isa(func, Symbol) && func !== :(:) && !(head === :. && isoperator(func))) ||
-            (isa(func, Expr) && (func.head == :. || func.head == :curly)) ||
+            (isa(func, Expr) && (func.head == :. || func.head == :curly || func.head == :macroname)) ||
             isa(func, GlobalRef)
         show_unquoted(io, func, indent)
     else
@@ -1007,7 +1007,13 @@ end
 ## AST printing ##
 
 show_unquoted(io::IO, val::SSAValue, ::Int, ::Int)      = print(io, "%", val.id)
-show_unquoted(io::IO, sym::Symbol, ::Int, ::Int)        = print(io, sym)
+function show_unquoted(io::IO, sym::Symbol, ::Int, ::Int)
+    if isidentifier(sym) || isoperator(sym)
+        print(io, sym)
+    else
+        print(io, "var", repr(string(sym)))
+    end
+end
 show_unquoted(io::IO, ex::LineNumberNode, ::Int, ::Int) = show_linenumber(io, ex.line, ex.file)
 show_unquoted(io::IO, ex::GotoNode, ::Int, ::Int)       = print(io, "goto %", ex.label)
 function show_unquoted(io::IO, ex::GlobalRef, ::Int, ::Int)
@@ -1356,14 +1362,19 @@ function show_unquoted(io::IO, ex::Expr, indent::Int, prec::Int)
         end
         # Use the functional syntax unless specifically designated with prec=-1
         # and hide the line number argument from the argument list
+        mname = args[1] isa Symbol ? Expr(:macroname, args[1]) : args[1]
         if prec >= 0
-            show_call(io, :call, args[1], args[3:end], indent)
+            show_call(io, :call, mname, args[3:end], indent)
         else
             show_args = Vector{Any}(undef, nargs - 1)
-            show_args[1] = args[1]
+            show_args[1] = mname
             show_args[2:end] = args[3:end]
             show_list(io, show_args, ' ', indent)
         end
+
+    elseif head === :macroname && nargs == 1
+        # `Expr(:macroname, mname)` => print `mname` symbol without escaping `@`
+        print(io, string(args[1]))
 
     elseif head === :line && 1 <= nargs <= 2
         show_linenumber(io, args...)
