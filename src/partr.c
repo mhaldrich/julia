@@ -411,8 +411,6 @@ static int may_sleep(jl_ptls_t ptls)
     return jl_atomic_load(&sleep_check_state) == sleeping && jl_atomic_load(&ptls->sleep_check_state) == sleeping;
 }
 
-extern volatile unsigned _threadedregion;
-
 JL_DLLEXPORT jl_task_t *jl_task_get_next(jl_value_t *getsticky)
 {
     jl_ptls_t ptls = jl_get_ptls_states();
@@ -434,7 +432,7 @@ JL_DLLEXPORT jl_task_t *jl_task_get_next(jl_value_t *getsticky)
 #endif
 
         jl_cpu_pause();
-        if (sleep_check_after_threshold(&start_cycles) || (!_threadedregion && ptls->tid == 0)) {
+        if (sleep_check_after_threshold(&start_cycles)) {
             if (!sleep_check_now(ptls->tid))
                 continue;
             jl_atomic_store(&ptls->sleep_check_state, sleeping); // acquire sleep-check lock
@@ -446,16 +444,8 @@ JL_DLLEXPORT jl_task_t *jl_task_get_next(jl_value_t *getsticky)
             // although none are allowed to create new ones
             // outside of threaded regions, all IO is permitted,
             // but only on thread 1
-            int uvlock = 0;
-            if (_threadedregion) {
-                uvlock = jl_mutex_trylock(&jl_uv_mutex);
-            }
-            else if (ptls->tid == 0) {
-                uvlock = 1;
-                JL_UV_LOCK();
-            }
+            int uvlock = jl_mutex_trylock(&jl_uv_mutex);
             if (uvlock) {
-                int active = 1;
                 if (jl_atomic_load(&jl_uv_n_waiters) != 0) {
                     // but if we won the race against someone who actually needs
                     // the lock to do real work, we need to let them have it instead
@@ -467,7 +457,7 @@ JL_DLLEXPORT jl_task_t *jl_task_get_next(jl_value_t *getsticky)
                     jl_gc_safepoint();
                     if (may_sleep(ptls)) {
                         loop->stop_flag = 0;
-                        active = uv_run(loop, UV_RUN_ONCE);
+                        uv_run(loop, UV_RUN_ONCE);
                     }
                     JL_UV_UNLOCK();
                     // optimization: check again first if we may have work to do
@@ -482,12 +472,6 @@ JL_DLLEXPORT jl_task_t *jl_task_get_next(jl_value_t *getsticky)
                     // TODO: this relinquishes responsibility for all event
                     //       to the last thread to do an explicit operation,
                     //       which may starve other threads of critical work
-                }
-                if (!_threadedregion && active && ptls->tid == 0) {
-                    // thread 0 is the only thread permitted to run the event loop
-                    // so it needs to stay alive
-                    start_cycles = 0;
-                    continue;
                 }
             }
 

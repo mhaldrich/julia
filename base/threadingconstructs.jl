@@ -18,9 +18,6 @@ on `threadid()`.
 """
 nthreads() = Int(unsafe_load(cglobal(:jl_n_threads, Cint)))
 
-# Only read/written by the main thread
-const in_threaded_loop = Ref(false)
-
 function _threadsfor(iter,lbody)
     lidx = iter.args[1]         # index
     range = iter.args[2]
@@ -65,18 +62,18 @@ function _threadsfor(iter,lbody)
             end
         end
         end
-        # Hack to make nested threaded loops kinda work
-        if threadid() != 1 || in_threaded_loop[]
-            # We are in a nested threaded loop
-            Base.invokelatest(threadsfor_fun, true)
-        else
-            in_threaded_loop[] = true
-            # the ccall is not expected to throw
-            ccall(:jl_threading_run, Cvoid, (Any,), threadsfor_fun)
-            in_threaded_loop[] = false
-        end
+        threading_run(threadsfor_fun)
         nothing
     end
+end
+
+function threading_run(func)
+    tasks = Vector{Task}(undef, nthreads())
+    for tid = 1:nthreads()
+        tasks[tid] = Base._run_on(Task(func), tid)
+    end
+    foreach(wait, tasks)
+    return nothing
 end
 
 """
