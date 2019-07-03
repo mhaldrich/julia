@@ -355,6 +355,8 @@ end
 @test sprint(show, Expr(:call, :foo, Symbol("@bar"))) == ":(foo(var\"@bar\"))"
 @test sprint(show, Expr(:call, :foo, Symbol("##")))   == ":(foo(var\"##\"))"
 @test sprint(show, Expr(:call, :foo, Symbol("a-b")))  == ":(foo(var\"a-b\"))"
+@test sprint(show, :(export @foo)) == ":(export @foo)"  # FIXME
+@test sprint(show, :(import A: @foo)) == ":(import A: @foo)"
 
 # issue #12477
 @test sprint(show,  Union{Int64, Int32, Int16, Int8, Float64}) == "Union{Float64, Int16, Int32, Int64, Int8}"
