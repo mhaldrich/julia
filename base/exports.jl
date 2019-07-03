@@ -959,6 +959,7 @@ export
     @gensym,
     @eval,
     @deprecate,
+    @var_str,
 
     # performance annotations
     @boundscheck,
