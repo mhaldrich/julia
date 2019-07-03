@@ -120,10 +120,17 @@
 (define syntactic-op? (Set syntactic-operators))
 (define syntactic-unary-op? (Set syntactic-unary-operators))
 
+(define (var-interpolation? ex)
+  (and (pair? ex)
+       (eq? 'macrocall (car ex))
+       (pair? (cdr ex))
+       (eq? '|@var_str| (cadr ex))))
+
 (define (symbol-or-interpolate? ex)
   (or (symbol? ex)
       (and (pair? ex)
-           (eq? '$ (car ex)))))
+           (eq? '$ (car ex)))
+      (var-interpolation? ex)))
 
 (define (is-word-operator? op)
   (every identifier-start-char? (string->list (symbol->string op))))
@@ -1486,6 +1493,7 @@
                            (var? (and (not nl) (or (and (symbol? var) (not (eq? var 'false))
                                                         (not (eq? var 'true)))
                                                    (and (length= var 2) (eq? (car var) '$))
+                                                   (var-interpolation? var)
                                                    (error (string "invalid syntax \"catch " (deparse var) "\"")))))
                            (catch-block (if (eq? (require-token s) 'finally)
                                             `(block ,(line-number-node s))
