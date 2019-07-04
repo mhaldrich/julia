@@ -274,14 +274,9 @@ maxrss() = ccall(:jl_maxrss, Csize_t, ())
 Predicate for testing if the OS provides a Unix-like interface.
 See documentation in [Handling Operating System Variation](@ref).
 """
-function isunix(os::Symbol)
-    if iswindows(os)
-        return false
-    elseif islinux(os) || isbsd(os)
-        return true
-    else
-        throw(ArgumentError("unknown operating system \"$os\""))
-    end
+
+function isunix()
+    return true
 end
 
 """
@@ -290,7 +285,11 @@ end
 Predicate for testing if the OS is a derivative of Linux.
 See documentation in [Handling Operating System Variation](@ref).
 """
-islinux(os::Symbol) = (os === :Linux)
+
+function islinux()
+    return true
+end
+
 
 """
     Sys.isbsd([os])
@@ -303,7 +302,10 @@ See documentation in [Handling Operating System Variation](@ref).
     `true` on macOS systems. To exclude macOS from a predicate, use
     `Sys.isbsd() && !Sys.isapple()`.
 """
-isbsd(os::Symbol) = (isfreebsd(os) || isopenbsd(os) || isnetbsd(os) || isdragonfly(os) || isapple(os))
+function isbsd()
+    return false
+end
+
 
 """
     Sys.isfreebsd([os])
@@ -367,7 +369,10 @@ isdragonfly(os::Symbol) = (os === :DragonFly)
 Predicate for testing if the OS is a derivative of Microsoft Windows NT.
 See documentation in [Handling Operating System Variation](@ref).
 """
-iswindows(os::Symbol) = (os === :Windows || os === :NT)
+
+function iswindows()
+    return false
+end
 
 """
     Sys.isapple([os])
@@ -375,10 +380,9 @@ iswindows(os::Symbol) = (os === :Windows || os === :NT)
 Predicate for testing if the OS is a derivative of Apple Macintosh OS X or Darwin.
 See documentation in [Handling Operating System Variation](@ref).
 """
-isapple(os::Symbol) = (os === :Apple || os === :Darwin)
 
-for f in (:isunix, :islinux, :isbsd, :isapple, :iswindows, :isfreebsd, :isopenbsd, :isnetbsd, :isdragonfly)
-    @eval $f() = $(getfield(@__MODULE__, f)(KERNEL))
+function isapple()
+    return false
 end
 
 if iswindows()
