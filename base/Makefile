@@ -53,7 +53,7 @@ ifeq ($(USE_GPL_LIBS), 1)
 else
 	@echo "const USE_GPL_LIBS = false" >> $@
 endif
-	@echo "const libllvm_version_string = \"$$($(LLVM_CONFIG_HOST) --version)\"" >> $@
+	@echo "const libllvm_version_string = \"$$(../../jl-wrapper $(LLVM_CONFIG_HOST) --version)\"" >> $@
 	@echo "const VERSION_STRING = \"$(JULIA_VERSION)\"" >> $@
 	@echo "const TAGGED_RELEASE_BANNER = \"$(TAGGED_RELEASE_BANNER)\"" >> $@
 ifeq ($(OS),WINNT)
@@ -201,11 +201,11 @@ endif # WINNT
 
 symlink_libLLVM: $(build_private_libdir)/libLLVM.dylib
 ifneq ($(USE_SYSTEM_LLVM),0)
-LLVM_CONFIG_HOST_LIBS := $(shell $(LLVM_CONFIG_HOST) --libfiles)
+LLVM_CONFIG_HOST_LIBS := $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --libfiles)
 # HACK: llvm-config doesn't correctly point to shared libs on all platforms
 #       https://github.com/JuliaLang/julia/issues/29981
 else
-LLVM_CONFIG_HOST_LIBS := $(shell $(LLVM_CONFIG_HOST) --libdir)/libLLVM.$(SHLIB_EXT)
+LLVM_CONFIG_HOST_LIBS := $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --libdir)/libLLVM.$(SHLIB_EXT)
 endif
 $(build_private_libdir)/libLLVM.dylib:
 	REALPATH=$(LLVM_CONFIG_HOST_LIBS) && \
