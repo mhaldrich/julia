@@ -57,12 +57,12 @@ SRCS += codegen jitlayers disasm debuginfo llvm-simdloop llvm-ptls llvm-muladd \
 	llvm-late-gc-lowering llvm-lower-handlers llvm-gc-invariant-verifier \
 	llvm-propagate-addrspaces llvm-multiversioning llvm-alloc-opt cgmemmgr \
 	llvm-api
-FLAGS += -I$(shell $(LLVM_CONFIG_HOST) --includedir)
+FLAGS += -I$(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --includedir)
 LLVM_LIBS := all
 ifeq ($(USE_POLLY),1)
 LLVMLINK += -lPolly -lPollyISL
-FLAGS += -I$(shell $(LLVM_CONFIG_HOST) --src-root)/tools/polly/include
-FLAGS += -I$(shell $(LLVM_CONFIG_HOST) --obj-root)/tools/polly/include
+FLAGS += -I$(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --src-root)/tools/polly/include
+FLAGS += -I$(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --obj-root)/tools/polly/include
 FLAGS += -DUSE_POLLY
 ifeq ($(USE_POLLY_OPENMP),1)
 FLAGS += -fopenmp
@@ -70,7 +70,7 @@ endif
 ifeq ($(USE_POLLY_ACC),1)
 LLVMLINK += -lPollyPPCG -lGPURuntime
 FLAGS += -DUSE_POLLY_ACC
-FLAGS += -I$(shell $(LLVM_CONFIG_HOST) --src-root)/tools/polly/tools # Required to find GPURuntime/GPUJIT.h
+FLAGS += -I$(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --src-root)/tools/polly/tools # Required to find GPURuntime/GPUJIT.h
 endif
 endif
 else
@@ -90,14 +90,14 @@ PUBLIC_HEADER_TARGETS := $(addprefix $(build_includedir)/julia/,$(notdir $(PUBLI
 
 ifeq ($(JULIACODEGEN),LLVM)
 ifneq ($(USE_SYSTEM_LLVM),0)
-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags --libs --system-libs)
+LLVMLINK += $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --ldflags --libs --system-libs)
 # HACK: llvm-config doesn't correctly point to shared libs on all platforms
 #       https://github.com/JuliaLang/julia/issues/29981
 else
 ifneq ($(USE_LLVM_SHLIB),1)
-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags) $(shell $(LLVM_CONFIG_HOST) --libs $(LLVM_LIBS)) $(shell $(LLVM_CONFIG_HOST) --ldflags) $(shell $(LLVM_CONFIG_HOST) --system-libs 2> /dev/null)
+LLVMLINK += $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --ldflags) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --libs $(LLVM_LIBS)) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --ldflags) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --system-libs 2> /dev/null)
 else
-LLVMLINK += $(shell $(LLVM_CONFIG_HOST) --ldflags) -lLLVM
+LLVMLINK += $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --ldflags) -lLLVM
 endif
 endif
 ifeq ($(USE_LLVM_SHLIB),1)
@@ -134,7 +134,7 @@ release debug: %: libjulia-%
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
-LLVM_CONFIG_ABSOLUTE := $(shell which $(LLVM_CONFIG))
+LLVM_CONFIG_ABSOLUTE :=/home/maldrich/yocto/dev/tmp/work/aarch64-poky-linux/julia/1.1.1-r0/git/usr/tools/llvm-config
 
 # source file rules
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(HEADERS) | $(BUILDDIR)
@@ -142,9 +142,9 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(HEADERS) | $(BUILDDIR)
 $(BUILDDIR)/%.dbg.obj: $(SRCDIR)/%.c $(HEADERS) | $(BUILDDIR)
 	@$(call PRINT_CC, $(CC) $(CPPFLAGS) $(CFLAGS) $(DEBUGFLAGS) -c $< -o $@)
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(SRCDIR)/llvm-version.h $(HEADERS) $(LLVM_CONFIG_ABSOLUTE) | $(BUILDDIR)
-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(CPPFLAGS) $(CXXFLAGS) $(SHIPFLAGS) $(CXX_DISABLE_ASSERTION) -c $< -o $@)
+	@$(call PRINT_CC, $(CXX) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --cxxflags) $(CPPFLAGS) $(CXXFLAGS) $(SHIPFLAGS) $(CXX_DISABLE_ASSERTION) -c $< -o $@)
 $(BUILDDIR)/%.dbg.obj: $(SRCDIR)/%.cpp $(SRCDIR)/llvm-version.h $(HEADERS) $(LLVM_CONFIG_ABSOLUTE) | $(BUILDDIR)
-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@)
+	@$(call PRINT_CC, $(CXX) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --cxxflags) $(CPPFLAGS) $(CXXFLAGS) $(DEBUGFLAGS) -c $< -o $@)
 
 # public header rules
 $(eval $(call dir_target,$(build_includedir)/julia))
@@ -162,7 +162,7 @@ libccalltest: $(build_shlibdir)/libccalltest.$(SHLIB_EXT)
 libllvmcalltest: $(build_shlibdir)/libllvmcalltest.$(SHLIB_EXT)
 
 ifeq ($(OS), Linux)
-JULIA_SPLITDEBUG := 1
+JULIA_SPLITDEBUG := 0
 else
 JULIA_SPLITDEBUG := 0
 endif
@@ -182,17 +182,17 @@ endif
 	mv $@.tmp $@
 
 $(build_shlibdir)/libllvmcalltest.$(SHLIB_EXT): $(SRCDIR)/llvmcalltest.cpp
-	@$(call PRINT_CC, $(CXX) $(shell $(LLVM_CONFIG_HOST) --cxxflags) $(CXXFLAGS) $(CPPFLAGS) $(DEBUGFLAGS) -O3 $< $(fPIC) -shared -o $@ $(LDFLAGS) -L$(build_shlibdir) -L$(build_libdir) $(NO_WHOLE_ARCHIVE) $(LLVMLINK))
+	@$(call PRINT_CC, $(CXX) $(shell ../../jl-wrapper $(LLVM_CONFIG_HOST) --cxxflags) $(CXXFLAGS) $(CPPFLAGS) $(DEBUGFLAGS) -O3 $< $(fPIC) -shared -o $@ $(LDFLAGS) -L$(build_shlibdir) -L$(build_libdir) $(NO_WHOLE_ARCHIVE) $(LLVMLINK))
 
 julia_flisp.boot.inc.phony: $(BUILDDIR)/julia_flisp.boot.inc
 
 $(BUILDDIR)/julia_flisp.boot.inc: $(BUILDDIR)/julia_flisp.boot $(FLISP_EXECUTABLE_release)
-	@$(call PRINT_FLISP, $(call spawn,$(FLISP_EXECUTABLE_release)) $(call cygpath_w,$(SRCDIR)/bin2hex.scm) < $< > $@)
+	@$(call PRINT_FLISP, $(call spawn,../../jl-wrapper $(FLISP_EXECUTABLE_release)) $(call cygpath_w,$(SRCDIR)/bin2hex.scm) < $< > $@)
 
 $(BUILDDIR)/julia_flisp.boot: $(addprefix $(SRCDIR)/,jlfrontend.scm flisp/aliases.scm flisp/profile.scm \
 		julia-parser.scm julia-syntax.scm match.scm utils.scm ast.scm macroexpand.scm mk_julia_flisp_boot.scm) \
 		$(FLISP_EXECUTABLE_release)
-	@$(call PRINT_FLISP, $(call spawn,$(FLISP_EXECUTABLE_release)) \
+	@$(call PRINT_FLISP, $(call spawn,../../jl-wrapper $(FLISP_EXECUTABLE_release)) \
 		$(call cygpath_w,$(SRCDIR)/mk_julia_flisp_boot.scm) $(call cygpath_w,$(dir $<)) $(notdir $<) $(call cygpath_w,$@))
 
 # additional dependency links
