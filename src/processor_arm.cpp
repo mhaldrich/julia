@@ -208,7 +208,7 @@ constexpr auto apple_hurricane = armv8a_crc_crypto;
 }
 
 static constexpr CPUSpec<CPU, feature_sz> cpus[] = {
-    {"generic", CPU::generic, CPU::generic, 0, Feature::generic},
+    {"generic", CPU::arm_cortex_a53, CPU::generic, 0, Feature::arm_cortex_a53},
     {"armv8.1-a", CPU::armv8_1_a, CPU::generic, 0, Feature::armv8_1a},
     {"armv8.2-a", CPU::armv8_2_a, CPU::generic, 0, Feature::armv8_2a},
     {"armv8.3_a", CPU::armv8_3_a, CPU::generic, 0, Feature::armv8_3a},
@@ -443,6 +443,7 @@ static constexpr CPUSpec<CPU, feature_sz> cpus[] = {
 
     // armv8l
     {"armv8-a", CPU::armv8_a, CPU::generic, 0, Feature::armv8a},
+    {"armv8-a", CPU::generic, CPU::generic, 0, Feature::generic},
     {"armv8-r", CPU::armv8_r, CPU::generic, 0, Feature::armv8r},
     {"armv8.1-a", CPU::armv8_1_a, CPU::generic, 0, Feature::armv8_1a},
     {"armv8.2-a", CPU::armv8_2_a, CPU::generic, 0, Feature::armv8_2a},
@@ -1403,6 +1404,7 @@ extern "C" int jl_test_cpu_feature(jl_cpu_feature_t feature)
 // FZ, bit [24]
 static constexpr uint32_t fpcr_fz_mask = 1 << 24;
 
+
 static inline uint32_t get_fpcr_aarch64(void)
 {
     uint32_t fpcr;
@@ -1414,6 +1416,7 @@ static inline void set_fpcr_aarch64(uint32_t fpcr)
 {
     asm volatile("msr fpcr, %0" :: "r"(fpcr));
 }
+
 
 extern "C" JL_DLLEXPORT int32_t jl_get_zero_subnormals(void)
 {
