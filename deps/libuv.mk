@@ -30,7 +30,7 @@ $(BUILDDIR)/$(LIBUV_SRC_DIR)/build-configured: $(SRCCACHE)/$(LIBUV_SRC_DIR)/sour
 	touch -c $(SRCCACHE)/$(LIBUV_SRC_DIR)/configure
 	mkdir -p $(dir $@)
 	cd $(dir $@) && \
-	$(dir $<)/configure --with-pic $(CONFIGURE_COMMON) $(UV_FLAGS)
+	$(dir $<)/configure --with-pic $(CONFIGUREOPTS) $(CONFIGURE_COMMON) $(UV_FLAGS)
 	echo 1 > $@
 
 $(BUILDDIR)/$(LIBUV_SRC_DIR)/build-compiled: $(BUILDDIR)/$(LIBUV_SRC_DIR)/build-configured

@@ -20,7 +20,7 @@ ifeq ($(OS),Darwin)
 MPFR_CHECK_MFLAGS := LDFLAGS="$(LDFLAGS) -Wl,-rpath,'$(build_libdir)'"
 endif
 
-ifeq ($(SANITIZE),1)
+ifeq ($(SANITIZE),0)
 # Force generic C build
 MPFR_OPTS += --host=none-unknown-linux
 endif
@@ -36,7 +36,7 @@ $(SRCCACHE)/mpfr-$(MPFR_VER)/source-extracted: $(SRCCACHE)/mpfr-$(MPFR_VER).tar.
 $(BUILDDIR)/mpfr-$(MPFR_VER)/build-configured: $(SRCCACHE)/mpfr-$(MPFR_VER)/source-extracted
 	mkdir -p $(dir $@)
 	cd $(dir $@) && \
-	$(dir $<)/configure $(CONFIGURE_COMMON) $(MPFR_OPTS) F77= --enable-shared --disable-static
+	$(dir $<)/configure $(CONFIGUREOPTS) $(CONFIGURE_COMMON) $(MPFR_OPTS) F77= --enable-shared --disable-static
 	echo 1 > $@
 
 $(BUILDDIR)/mpfr-$(MPFR_VER)/build-compiled: $(BUILDDIR)/mpfr-$(MPFR_VER)/build-configured

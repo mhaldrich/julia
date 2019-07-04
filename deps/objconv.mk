@@ -4,7 +4,7 @@ $(SRCCACHE)/objconv.zip: | $(SRCCACHE)
 	$(JLDOWNLOAD) $@ http://www.agner.org/optimize/objconv.zip
 
 $(BUILDDIR)/objconv/source-extracted: $(SRCCACHE)/objconv.zip
-	-rm -r $(dir $@)
+	-rm -rf $(dir $@)
 	mkdir -p $(BUILDDIR)
 	unzip -d $(dir $@) $<
 	cd $(dir $@) && unzip source.zip

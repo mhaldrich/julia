@@ -28,7 +28,7 @@ $(SRCCACHE)/curl-$(CURL_VER)/source-extracted: $(SRCCACHE)/curl-$(CURL_VER).tar.
 $(BUILDDIR)/curl-$(CURL_VER)/build-configured: $(SRCCACHE)/curl-$(CURL_VER)/source-extracted
 	mkdir -p $(dir $@)
 	cd $(dir $@) && \
-	$(dir $<)/configure $(CONFIGURE_COMMON) --includedir=$(build_includedir) \
+	$(dir $<)/configure $(CONFIGUREOPTS) $(CONFIGURE_COMMON) --includedir=$(build_includedir) \
 		--without-ssl --without-gnutls --without-gssapi --without-zlib \
 		--without-libidn --without-libidn2 --without-libmetalink --without-librtmp \
 		--without-nghttp2 --without-nss --without-polarssl \
