@@ -12,7 +12,7 @@
 
 # Julia precompilation options
 # Set to zero to turn off extra precompile (e.g. for the REPL)
-JULIA_PRECOMPILE ?= 1
+JULIA_PRECOMPILE ?= 0
 
 # OPENBLAS build options
 OPENBLAS_TARGET_ARCH:=
@@ -694,6 +694,9 @@ ISX86:=1
 else ifeq ($(ARCH),x86_64)
 BINARY:=64
 ISX86:=1
+#else ifeq ($(ARCH),aarch64)
+#BINARY:=64
+#ISX86:=0
 else
 # For all other architectures (ARM, PPC, AArch64, etc.)
 ISX86:=0
@@ -862,6 +865,8 @@ else
 LLVM_CONFIG_HOST = $(call spawn,$(LLVM_CONFIG))
 endif
 endif
+
+LLVM_CONFIG_HOST = $(call spawn, ../jl-wrapper $(LLVM_CONFIG))
 
 ifeq ($(USE_SYSTEM_PCRE), 1)
 PCRE_CONFIG := pcre2-config
