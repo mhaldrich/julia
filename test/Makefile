@@ -22,7 +22,7 @@ default: all
 
 $(TESTS):
 	@cd $(SRCDIR) && \
-	$(call PRINT_JULIA, $(call spawn,$(JULIA_EXECUTABLE)) --check-bounds=yes --startup-file=no ./runtests.jl $@)
+	$(call PRINT_JULIA, $(call spawn,../../jl-wrapper $(JULIA_EXECUTABLE)) --check-bounds=yes --startup-file=no ./runtests.jl $@)
 
 embedding:
 	@$(MAKE) -C $(SRCDIR)/$@ check $(EMBEDDING_ARGS)
