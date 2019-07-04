@@ -258,7 +258,7 @@ catch e
     VersionNumber(0)
 end
 
-const libllvm_version = VersionNumber(libllvm_version_string)
+const libllvm_version = VersionNumber("6.0.1")
 
 function banner(io::IO = stdout)
     if GIT_VERSION_INFO.tagged_commit
