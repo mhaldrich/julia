@@ -6,7 +6,7 @@ default: html
 SRCDIR           := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 JULIAHOME        := $(abspath $(SRCDIR)/..)
 include $(JULIAHOME)/Make.inc
-JULIA_EXECUTABLE := $(call spawn,$(build_bindir)/julia)
+JULIA_EXECUTABLE := $(call spawn,. ../../jl-wrapper $(build_bindir)/julia)
 
 .PHONY: help clean cleanall html pdf deps deploy
 
@@ -36,7 +36,7 @@ cleanall: clean
 
 html: deps
 	@echo "Building HTML documentation."
-	$(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) $(DOCUMENTER_OPTIONS)
+	#$(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) $(DOCUMENTER_OPTIONS)
 	@echo "Build finished. The HTML pages are in _build/html."
 
 pdf: deps
@@ -47,5 +47,5 @@ pdf: deps
 # The deploy target should only be called in Travis builds
 deploy: deps
 	@echo "Deploying HTML documentation."
-	$(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) -- deploy $(DOCUMENTER_OPTIONS)
+	#$(JULIA_EXECUTABLE) --color=yes $(call cygpath_w,$(SRCDIR)/make.jl) -- deploy $(DOCUMENTER_OPTIONS)
 	@echo "Build & deploy of docs finished."
