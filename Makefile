@@ -81,14 +81,15 @@ julia-sysimg-release : julia-stdlib julia-sysimg julia-ui-release
 	@$(MAKE) $(QUIET_MAKE) -C $(BUILDROOT) $(build_private_libdir)/sys.$(SHLIB_EXT) JULIA_EXECUTABLE_release='. ../../jl-wrapper $(JULIA_EXECUTABLE)'
 
 julia-sysimg-debug : julia-stdlib julia-sysimg julia-ui-debug
-	@$(MAKE) $(QUIET_MAKE) -C $(BUILDROOT) $(build_private_libdir)/sys-debug.$(SHLIB_EXT)
+	@$(MAKE) $(QUIET_MAKE) -C $(BUILDROOT) $(build_private_libdir)/sys-debug.$(SHLIB_EXT) JULIA_EXECUTABLE_debug='. ../../jl-wrapper $(JULIA_EXECUTABLE_debug)'
+
 
 julia-debug julia-release : julia-% : julia-ui-% julia-sysimg-% julia-symlink julia-libccalltest julia-libllvmcalltest julia-base-cache
 
 debug release : % : julia-%
 
 docs: julia-sysimg-$(JULIA_BUILD_MODE)
-	@$(MAKE) $(QUIET_MAKE) -C $(BUILDROOT)/doc JULIA_EXECUTABLE='$(call spawn,. ../../jl-wrapper $(JULIA_EXECUTABLE_$(JULIA_BUILD_MODE)))'
+	@$(MAKE) $(QUIET_MAKE) -C $(BUILDROOT)/doc JULIA_EXECUTABLE='. ../../jl-wrapper $(JULIA_EXECUTABLE)'
 
 check-whitespace:
 ifneq ($(NO_GIT), 1)
@@ -391,8 +392,8 @@ endif
 	$(INSTALL_M) $(JULIAHOME)/contrib/build_sysimg.jl $(DESTDIR)$(datarootdir)/julia/
 	# Copy in all .jl sources as well
 	cp -R -L $(build_datarootdir)/julia $(DESTDIR)$(datarootdir)/
-	# Copy documentation
-	cp -R -L $(BUILDROOT)/doc/_build/html $(DESTDIR)$(docdir)/
+	# Copy documentation -- disabled for now
+	#cp -R -L $(BUILDROOT)/doc/_build/html $(DESTDIR)$(docdir)/
 	# Remove various files which should not be installed
 	-rm -f $(DESTDIR)$(datarootdir)/julia/base/version_git.sh
 	-rm -f $(DESTDIR)$(datarootdir)/julia/test/Makefile
