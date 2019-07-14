@@ -1,7 +1,0 @@
-override VERBOSE=1
-override ARCH=aarch64
-override MARCH=aarch64
-override JULIA_CPU_TARGET=cortex-a57
-override LLVM_HOST_TRIPLE=${TARGET_SYS}
-override LLVM_DEFAULT_TARGET_TRIPLE=${TARGET_SYS}
-override LLVM_TARGET_TRIPLE=${TARGET_SYS}
