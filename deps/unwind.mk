@@ -36,6 +36,10 @@ $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-dwarf-Fix-incorrect-cfi-execution.
 	cd $(SRCCACHE)/libunwind-$(UNWIND_VER) && patch -p1 -f < $(SRCDIR)/patches/libunwind-dwarf-Fix-incorrect-cfi-execution.patch
 	echo 1 > $@
 
+$(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-disable-tests.patch-applied: $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-dwarf-Fix-incorrect-cfi-execution.patch-applied
+	cd $(SRCCACHE)/libunwind-$(UNWIND_VER) && patch -p1 -f < $(SRCDIR)/patches/libunwind-disable-tests.patch
+	echo 1 > $@
+
 $(BUILDDIR)/libunwind-$(UNWIND_VER)/build-configured: $(SRCCACHE)/libunwind-$(UNWIND_VER)/source-extracted $(SRCCACHE)/libunwind-$(UNWIND_VER)/libunwind-dwarf-Fix-incorrect-cfi-execution.patch-applied
 	mkdir -p $(dir $@)
 	cd $(dir $@) && \
